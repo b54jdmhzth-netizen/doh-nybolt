@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TrafikPro – Dohánybolt kezelő</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="TrafikPro">
+<meta name="theme-color" content="#3C3489">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px}
+.app{display:flex;height:700px;width:100%;max-width:960px;border:1px solid #e0ddd4;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.sidebar{width:192px;background:#f5f5f0;border-right:1px solid #e0ddd4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.logo{padding:13px 15px;border-bottom:1px solid #e0ddd4}
+.logo-t{font-size:14px;font-weight:600;color:#1a1a18}
+.logo-s{font-size:11px;color:#888780}
+.ns{padding:7px 15px 3px;font-size:10px;font-weight:600;color:#aaa8a0;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 15px;cursor:pointer;font-size:13px;color:#888780;transition:background .12s;border-left:2px solid transparent}
+.ni:hover{background:#fff;color:#1a1a18}
+.ni.active{background:#fff;color:#1a1a18;font-weight:600;border-left-color:#534AB7}
+.ni i{font-size:16px}
+.main{flex:1;overflow-y:auto;padding:16px}
+.pg{display:none}.pg.active{display:block}
+.pg-title{font-size:17px;font-weight:600;color:#1a1a18;margin-bottom:13px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:13px}
+.met{background:#f5f5f0;border-radius:8px;padding:11px}
+.met-l{font-size:11px;color:#888780;margin-bottom:3px}
+.met-v{font-size:18px;font-weight:600;color:#1a1a18}
+.met-v.g{color:#0F6E56}.met-v.r{color:#A32D2D}.met-v.a{color:#854F0B}
+.card{background:#fff;border:1px solid #e0ddd4;border-radius:12px;padding:13px;margin-bottom:11px}
+.ct{font-size:11px;font-weight:600;color:#888780;margin-bottom:9px;text-transform:uppercase;letter-spacing:.05em}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:11px}
+table{width:100%;font-size:12px;border-collapse:collapse;table-layout:fixed}
+th{text-align:left;color:#888780;font-weight:600;padding:5px 6px;border-bottom:1px solid #e0ddd4;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td{padding:5px 6px;color:#1a1a18;border-bottom:1px solid #e8e6e0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.bdg{display:inline-block;padding:2px 6px;border-radius:99px;font-size:11px;font-weight:600}
+.bdg.ok{background:#E1F5EE;color:#0F6E56}
+.bdg.lo{background:#FAEEDA;color:#854F0B}
+.bdg.cr{background:#FCEBEB;color:#A32D2D}
+.bdg.bev{background:#E1F5EE;color:#0F6E56}
+.bdg.ki{background:#FCEBEB;color:#A32D2D}
+.bdg.re{background:#FAEEDA;color:#854F0B}
+.bdg.be{background:#EEEDFE;color:#3C3489}
+.bdg.ar{background:#FAECE7;color:#993C1D}
+.bdg.ka{background:#E6F1FB;color:#185FA5}
+.bdg.ad{background:#FBEAF0;color:#993556}
+.bdg.eg{background:#f1efe8;color:#5F5E5A}
+.bdg.el{background:#E1F5EE;color:#085041}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border:1px solid #ccc;border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:#1a1a18;font-family:inherit}
+.btn:hover{background:#f5f5f0}
+.btn.p{background:#3C3489;color:#fff;border-color:#3C3489}
+.btn.p:hover{background:#534AB7}
+.btn.g{background:#085041;color:#E1F5EE;border-color:#085041}
+.btn.g:hover{background:#0F6E56}
+.btn.sm{padding:3px 7px;font-size:11px}
+.br{display:flex;gap:7px;margin-bottom:0;align-items:center;flex-wrap:wrap}
+.fg label{display:block;font-size:11px;color:#888780;margin-bottom:3px}
+.fg input,.fg select{width:100%;padding:6px 8px;border:1px solid #ccc;border-radius:8px;font-size:12px;background:#fff;color:#1a1a18;font-family:inherit}
+.fg input:focus,.fg select:focus{outline:none;border-color:#534AB7}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:9px}
+.fg4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:9px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #e0ddd4;margin-bottom:13px}
+.tab{padding:6px 12px;font-size:13px;cursor:pointer;color:#888780;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.tab:hover{color:#1a1a18}
+.tab.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:600}
+.tp{display:none}.tp.active{display:block}
+.filt{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.fb{padding:3px 9px;border:1px solid #e0ddd4;border-radius:99px;font-size:11px;cursor:pointer;background:transparent;color:#888780;font-family:inherit}
+.fb:hover{background:#f5f5f0}
+.fb.active{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC;font-weight:600}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px}
+.sc{border:1px solid #e0ddd4;border-radius:8px;padding:9px 11px;cursor:pointer;transition:background .12s}
+.sc:hover{background:#f5f5f0}
+.sc.sel{border-color:#534AB7;background:#EEEDFE}
+.pr{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.pn{font-size:12px;color:#1a1a18;width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb{flex:1;background:#f5f5f0;border-radius:99px;height:6px}
+.pf{height:6px;border-radius:99px;background:#534AB7}
+.pv{font-size:11px;color:#888780;width:32px;text-align:right}
+.ir{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #e0ddd4;border-radius:8px;margin-bottom:6px}
+.qr{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #e0ddd4;border-radius:8px;margin-bottom:6px}
+.cb{width:28px;height:28px;border:1px solid #ccc;border-radius:8px;background:transparent;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#1a1a18;font-family:inherit}
+.cb:hover{background:#f5f5f0}
+.cv{font-size:14px;font-weight:600;color:#1a1a18;min-width:28px;text-align:center}
+.bw{display:flex;align-items:flex-end;gap:5px;height:80px;margin-top:7px}
+.bc{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+.bar{width:100%;border-radius:3px 3px 0 0}
+.bar.inc{background:#1D9E75}.bar.exp{background:#D85A30}
+.blb{font-size:10px;color:#888780}
+.toast{position:fixed;bottom:24px;right:24px;background:#3C3489;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;font-family:inherit}
+.toast.show{opacity:1}
+
+/* Mobile / PWA optimalizálás */
+@media (max-width: 768px) {
+  body { padding: 0; align-items: stretch; }
+  .app { flex-direction: column; height: 100dvh; max-width: 100%; border-radius: 0; border: none; box-shadow: none; }
+  .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid #e0ddd4; overflow-x: auto; overflow-y: hidden; padding-bottom: env(safe-area-inset-bottom); }
+  .logo { display: none; }
+  .ns { display: none; }
+  .ni { padding: 10px 12px; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; font-size: 12px; gap: 5px; }
+  .ni i { font-size: 18px; }
+  .ni span { display: none; }
+  .ni.active { border-bottom-color: #534AB7; border-left: none; }
+  .main { padding: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .two { grid-template-columns: 1fr; }
+  .fg2, .fg3, .fg4 { grid-template-columns: 1fr 1fr; }
+  .sg { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-t"><i class="ti ti-building-store" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>TrafikPro</div>
+    <div class="logo-s" id="sdate"></div>
+  </div>
+  <div class="ns">Főmenü</div>
+  <div class="ni active" onclick="nav('dashboard',this)"><i class="ti ti-dashboard"></i>Áttekintés</div>
+  <div class="ni" onclick="nav('kassza',this)"><i class="ti ti-receipt"></i>Kassza zárás</div>
+  <div class="ni" onclick="nav('penzugy',this)"><i class="ti ti-cash"></i>Pénzügy</div>
+  <div class="ns">Raktár</div>
+  <div class="ni" onclick="nav('keszlet',this)"><i class="ti ti-package"></i>Készlet</div>
+  <div class="ni" onclick="nav('eladas',this)"><i class="ti ti-shopping-cart"></i>Eladás / Fogyás</div>
+  <div class="ni" onclick="nav('szallito',this)"><i class="ti ti-truck-delivery"></i>Szállítók</div>
+  <div class="ns">Személyzet</div>
+  <div class="ni" onclick="nav('muszak',this)"><i class="ti ti-calendar-event"></i>Műszak</div>
+  <div class="ns">Kimutatás</div>
+  <div class="ni" onclick="nav('riport',this)"><i class="ti ti-chart-bar"></i>Riportok</div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="pg active" id="pg-dashboard">
+  <div class="pg-title">Áttekintés</div>
+  <div class="metrics" id="dash-m"></div>
+  <div class="two">
+    <div class="card"><div class="ct">Heti forgalom</div>
+      <div class="bw" id="dash-chart"></div>
+      <div style="display:flex;gap:10px;margin-top:6px">
+        <span style="font-size:11px;color:#0F6E56;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#1D9E75;border-radius:2px;display:inline-block"></span>Bevétel</span>
+        <span style="font-size:11px;color:#A32D2D;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#D85A30;border-radius:2px;display:inline-block"></span>Kiadás</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Top eladott termékek</div><div id="dash-top"></div>
+      <div style="margin-top:9px;padding-top:9px;border-top:1px solid #e0ddd4">
+        <div class="ct" style="margin-bottom:5px">Kritikus készlet</div>
+        <div id="dash-crit" style="font-size:12px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KASSZA -->
+<div class="pg" id="pg-kassza">
+  <div class="pg-title">Kassza zárás</div>
+  <div class="two">
+    <div>
+      <div style="background:#f5f5f0;border-radius:12px;padding:14px;text-align:center;margin-bottom:11px">
+        <div style="font-size:11px;color:#888780">Nyitó kassza</div>
+        <div style="font-size:28px;font-weight:700;color:#1a1a18;margin:6px 0" id="k-nyito">0 Ft</div>
+        <div style="font-size:11px;color:#888780">Utolsó zárás alapján</div>
+      </div>
+      <div class="card"><div class="ct">Mai bevitel</div>
+        <div class="fg2">
+          <div class="fg"><label>Bevétel (Ft)</label><input type="number" id="k-bev" min="0" placeholder="0"></div>
+          <div class="fg"><label>Kiadás (Ft)</label><input type="number" id="k-ki" min="0" placeholder="0"></div>
+        </div>
+        <div class="fg2">
+          <div class="fg"><label>Számlált készpénz (Ft)</label><input type="number" id="k-szam" min="0" placeholder="0"></div>
+          <div class="fg"><label>Megjegyzés</label><input type="text" id="k-megj" placeholder="pl. forgalmas nap"></div>
+        </div>
+        <div id="k-diff" style="display:none;margin:7px 0;padding:7px;background:#f5f5f0;border-radius:8px;font-size:12px">
+          Várható záró: <strong id="k-vart"></strong> &nbsp;|&nbsp; Eltérés: <strong id="k-elt"></strong>
+        </div>
+        <button class="btn p" onclick="kassza_zar()"><i class="ti ti-lock"></i>Kassza zárás mentése</button>
+      </div>
+    </div>
+    <div class="card"><div class="ct">Korábbi zárások</div>
+      <table><thead><tr><th style="width:68px">Dátum</th><th style="width:70px">Bevétel</th><th style="width:70px">Kiadás</th><th style="width:68px">Záró</th><th style="width:52px">Eltérés</th></tr></thead>
+      <tbody id="k-hist"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- PÉNZÜGY -->
+<div class="pg" id="pg-penzugy">
+  <div class="pg-title">Pénzügy</div>
+  <div class="metrics" id="penz-m"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="ptab('rogz',this)">Rögzítés</button>
+    <button class="tab" onclick="ptab('ism',this)">Ismétlődő</button>
+    <button class="tab" onclick="ptab('lista',this)">Tranzakciók</button>
+    <button class="tab" onclick="ptab('ossz',this)">Összesítő</button>
+  </div>
+  <div class="tp active" id="ptp-rogz">
+    <div class="card"><div class="ct">Gyors sablonok</div>
+      <div class="sg" id="sablonok"></div>
+      <div id="sform" style="display:none">
+        <div class="fg3">
+          <div class="fg"><label>Összeg (Ft)</label><input type="number" id="s-osz" min="0"></div>
+          <div class="fg"><label>Dátum</label><input type="date" id="s-dat"></div>
+          <div class="fg"><label>Megjegyzés</label><input type="text" id="s-meg" placeholder="opcionális"></div>
+        </div>
+        <div class="br">
+          <button class="btn p" onclick="sablon_ment()"><i class="ti ti-check"></i>Mentés</button>
+          <button class="btn" onclick="sablon_cancel()"><i class="ti ti-x"></i>Mégsem</button>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="ct">Egyedi tétel</div>
+      <div class="fg2">
+        <div class="fg"><label>Típus</label><select id="e-tip"><option value="bevetel">Bevétel</option><option value="kiadas">Kiadás</option></select></div>
+        <div class="fg"><label>Kategória</label><select id="e-kat"><option>Értékesítés</option><option>Árubeszerzés</option><option>Rezsi</option><option>Bér</option><option>Karbantartás</option><option>Adó</option><option>Egyéb</option></select></div>
+        <div class="fg"><label>Összeg (Ft)</label><input type="number" id="e-osz" min="0" placeholder="0"></div>
+        <div class="fg"><label>Dátum</label><input type="date" id="e-dat"></div>
+      </div>
+      <div class="fg" style="margin-bottom:9px"><label>Leírás</label><input type="text" id="e-lei" placeholder="pl. Főbérleti díj júniusra"></div>
+      <button class="btn p" onclick="egyedi_ment()"><i class="ti ti-plus"></i>Rögzítés</button>
+    </div>
+  </div>
+  <div class="tp" id="ptp-ism">
+    <div class="card"><div class="ct">Új ismétlődő tétel</div>
+      <div class="fg2">
+        <div class="fg"><label>Megnevezés</label><input type="text" id="i-nev" placeholder="pl. Bérleti díj"></div>
+        <div class="fg"><label>Kategória</label><select id="i-kat"><option>Rezsi</option><option>Bér</option><option>Árubeszerzés</option><option>Adó</option><option>Karbantartás</option><option>Egyéb</option></select></div>
+        <div class="fg"><label>Összeg (Ft)</label><input type="number" id="i-osz" min="0" placeholder="0"></div>
+        <div class="fg"><label>Minden hónap</label><select id="i-nap"><option value="1">1-jén</option><option value="5">5-én</option><option value="10">10-én</option><option value="15">15-én</option><option value="20">20-án</option><option value="25">25-én</option><option value="28">28-án</option></select></div>
+      </div>
+      <button class="btn p" onclick="ism_add()"><i class="ti ti-plus"></i>Ismétlődő mentése</button>
+    </div>
+    <div class="card"><div class="ct">Aktív ismétlődők</div><div id="ism-l"></div></div>
+  </div>
+  <div class="tp" id="ptp-lista">
+    <div class="filt">
+      <button class="fb active" onclick="set_filt('mind',this)">Mind</button>
+      <button class="fb" onclick="set_filt('bevetel',this)">Bevételek</button>
+      <button class="fb" onclick="set_filt('kiadas',this)">Kiadások</button>
+      <button class="fb" onclick="set_filt('Rezsi',this)">Rezsi</button>
+      <button class="fb" onclick="set_filt('Bér',this)">Bér</button>
+      <button class="fb" onclick="set_filt('Árubeszerzés',this)">Árubeszerzés</button>
+      <button class="fb" onclick="set_filt('Karbantartás',this)">Karbantartás</button>
+      <button class="fb" onclick="set_filt('Adó',this)">Adó</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table><thead><tr><th style="width:66px;padding:7px 8px">Dátum</th><th>Leírás</th><th style="width:78px">Kat.</th><th style="width:52px">Típus</th><th style="width:78px;text-align:right">Összeg</th><th style="width:28px"></th></tr></thead>
+      <tbody id="penz-l"></tbody></table>
+    </div>
+  </div>
+  <div class="tp" id="ptp-ossz">
+    <div class="two">
+      <div class="card"><div class="ct">Kiadás kategóriánként</div><div id="kat-chart"></div></div>
+      <div class="card"><div class="ct">Havi mérleg</div><div id="havi-m"></div></div>
+    </div>
+    <div class="card"><div class="ct">Esedékes (következő 30 nap)</div><div id="esed"></div></div>
+  </div>
+</div>
+
+<!-- KÉSZLET -->
+<div class="pg" id="pg-keszlet">
+  <div class="pg-title">Készlet</div>
+  <div class="metrics" id="ksz-met"></div>
+  <div class="card"><div class="ct">Termék hozzáadása / frissítése</div>
+    <div class="fg4">
+      <div class="fg"><label>Terméknév</label><input type="text" id="ksz-nev" placeholder="pl. Marlboro Red"></div>
+      <div class="fg"><label>Egységár (Ft)</label><input type="number" id="ksz-ar" min="0" placeholder="0"></div>
+      <div class="fg"><label>Készlet (db/cs)</label><input type="number" id="ksz-db" min="0" placeholder="0"></div>
+      <div class="fg"><label>Minimum küszöb</label><input type="number" id="ksz-min" min="0" placeholder="10"></div>
+    </div>
+    <div class="br"><button class="btn p" onclick="ksz_add()"><i class="ti ti-plus"></i>Mentés</button></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table><thead><tr>
+      <th style="padding:7px 8px">Termék</th><th style="width:72px">Ár</th><th style="width:55px">Készlet</th><th style="width:42px">Min.</th><th style="width:58px">Eladott</th><th style="width:70px">Állapot</th><th style="width:28px"></th>
+    </tr></thead><tbody id="ksz-l"></tbody></table>
+  </div>
+</div>
+
+<!-- ELADÁS / FOGYÁS -->
+<div class="pg" id="pg-eladas">
+  <div class="pg-title">Eladás / Fogyás</div>
+  <div class="metrics" id="el-met"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="etab('gyors',this)">Gyors eladás</button>
+    <button class="tab" onclick="etab('egyedi',this)">Egyedi rögzítés</button>
+    <button class="tab" onclick="etab('naplo',this)">Fogyási napló</button>
+    <button class="tab" onclick="etab('stat',this)">Statisztika</button>
+  </div>
+  <div class="tp active" id="etp-gyors">
+    <div class="card"><div class="ct">Gyors eladás – egy kattintással</div><div id="quick-list"></div></div>
+  </div>
+  <div class="tp" id="etp-egyedi">
+    <div class="card"><div class="ct">Egyedi eladás rögzítése</div>
+      <div class="fg3">
+        <div class="fg"><label>Termék</label><select id="el-nev"></select></div>
+        <div class="fg"><label>Mennyiség</label><input type="number" id="el-db" min="1" value="1"></div>
+        <div class="fg"><label>Dátum</label><input type="date" id="el-dat"></div>
+      </div>
+      <div id="el-prev" style="margin-bottom:9px;font-size:12px;color:#888780"></div>
+      <button class="btn g" onclick="eladas_ment()"><i class="ti ti-shopping-cart"></i>Eladás rögzítése</button>
+    </div>
+  </div>
+  <div class="tp" id="etp-naplo">
+    <div class="card" style="padding:0;overflow:hidden">
+      <table><thead><tr><th style="width:70px;padding:7px 8px">Dátum</th><th>Termék</th><th style="width:50px">Db</th><th style="width:82px">Bevétel</th><th style="width:58px">Típus</th><th style="width:28px"></th></tr></thead>
+      <tbody id="naplo-l"></tbody></table>
+    </div>
+  </div>
+  <div class="tp" id="etp-stat">
+    <div class="two">
+      <div class="card"><div class="ct">Legjobban fogyó termékek</div><div id="top-fogyo"></div></div>
+      <div class="card"><div class="ct">Készlet értéke</div><div id="ksz-ertek"></div></div>
+    </div>
+    <div class="card"><div class="ct">Termékenkénti összesítő</div>
+      <table><thead><tr><th>Termék</th><th style="width:58px">Készlet</th><th style="width:60px">Eladott</th><th style="width:80px">Forgalom</th><th style="width:78px">Kész. érték</th></tr></thead>
+      <tbody id="stat-l"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- SZÁLLÍTÓK -->
+<div class="pg" id="pg-szallito">
+  <div class="pg-title">Szállítók</div>
+  <div class="card"><div class="ct">Új szállító</div>
+    <div class="fg2">
+      <div class="fg"><label>Név</label><input type="text" id="sz-nev" placeholder="Cég neve"></div>
+      <div class="fg"><label>Kapcsolattartó</label><input type="text" id="sz-kon" placeholder="Kovács János"></div>
+      <div class="fg"><label>Telefonszám</label><input type="text" id="sz-tel" placeholder="+36 20 ..."></div>
+      <div class="fg"><label>Termékek</label><input type="text" id="sz-ter" placeholder="pl. Marlboro, L&M"></div>
+      <div class="fg"><label>Rendelési nap</label><select id="sz-nap"><option>Hétfő</option><option>Kedd</option><option>Szerda</option><option>Csütörtök</option><option>Péntek</option></select></div>
+      <div class="fg"><label>Megjegyzés</label><input type="text" id="sz-meg" placeholder="pl. 8-10h között"></div>
+    </div>
+    <button class="btn p" onclick="sz_add()"><i class="ti ti-plus"></i>Szállító mentése</button>
+  </div>
+  <div class="card"><div class="ct">Szállítói lista</div>
+    <table><thead><tr><th>Név</th><th style="width:88px">Kontakt</th><th style="width:88px">Telefon</th><th style="width:80px">Termékek</th><th style="width:62px">Rend. nap</th><th style="width:28px"></th></tr></thead>
+    <tbody id="sz-l"></tbody></table>
+  </div>
+</div>
+
+<!-- MŰSZAK -->
+<div class="pg" id="pg-muszak">
+  <div class="pg-title">Műszakbeosztás</div>
+  <div class="card"><div class="ct">Műszak rögzítése</div>
+    <div class="fg2">
+      <div class="fg"><label>Dolgozó neve</label><input type="text" id="m-nev" placeholder="pl. Kovács Anna"></div>
+      <div class="fg"><label>Dátum</label><input type="date" id="m-dat"></div>
+      <div class="fg"><label>Műszak</label><select id="m-tip"><option value="6-14">Reggeli (6–14h)</option><option value="14-22">Délutáni (14–22h)</option><option value="6-22">Egész napos</option></select></div>
+      <div class="fg"><label>Megjegyzés</label><input type="text" id="m-meg" placeholder="pl. szabadság"></div>
+    </div>
+    <button class="btn p" onclick="m_add()"><i class="ti ti-plus"></i>Beosztás mentése</button>
+  </div>
+  <div class="card"><div class="ct">Beosztás</div>
+    <table><thead><tr><th style="width:75px">Dátum</th><th>Dolgozó</th><th style="width:100px">Műszak</th><th>Megjegyzés</th><th style="width:28px"></th></tr></thead>
+    <tbody id="m-l"></tbody></table>
+  </div>
+</div>
+
+<!-- RIPORTOK -->
+<div class="pg" id="pg-riport">
+  <div class="pg-title">Riportok</div>
+  <div class="metrics" id="rip-m"></div>
+  <div class="two">
+    <div class="card"><div class="ct">Havi mérleg</div><div id="rip-havi"></div></div>
+    <div class="card"><div class="ct">Kiadás kategóriánként</div><div id="rip-kat"></div></div>
+  </div>
+  <div class="card"><div class="ct">Összes tranzakció</div>
+    <table><thead><tr><th style="width:66px">Dátum</th><th>Leírás</th><th style="width:72px">Kat.</th><th style="width:52px">Típus</th><th style="width:78px;text-align:right">Összeg</th></tr></thead>
+    <tbody id="rip-l"></tbody></table>
+  </div>
+</div>
+
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const today=new Date().toISOString().slice(0,10);
+document.getElementById('sdate').textContent=today;
+['e-dat','s-dat','el-dat','m-dat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+
+function fmt(n){return Math.round(n).toLocaleString('hu-HU')+' Ft'}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function load(k){try{const r=localStorage.getItem(k);return r?JSON.parse(r):[]}catch{return[]}}
+function save(k,d){try{localStorage.setItem(k,JSON.stringify(d))}catch{toast('Mentési hiba!')}}
+
+const KAT_COLOR={'Rezsi':'#EF9F27','Bér':'#7F77DD','Árubeszerzés':'#D85A30','Karbantartás':'#378ADD','Adó':'#D4537E','Egyéb':'#888780','Értékesítés':'#1D9E75'};
+const KAT_BDG={'Értékesítés':'bev','Rezsi':'re','Bér':'be','Árubeszerzés':'ar','Karbantartás':'ka','Adó':'ad','Egyéb':'eg'};
+const SABLONOK=[
+  {id:'villany',nev:'Villany',kat:'Rezsi',tip:'kiadas',ikon:'ti-bolt',bg:'#FAEEDA',tc:'#854F0B',alap:15000},
+  {id:'gaz',nev:'Gáz',kat:'Rezsi',tip:'kiadas',ikon:'ti-flame',bg:'#FAEEDA',tc:'#854F0B',alap:8000},
+  {id:'viz',nev:'Víz',kat:'Rezsi',tip:'kiadas',ikon:'ti-droplet',bg:'#E6F1FB',tc:'#185FA5',alap:4000},
+  {id:'berleti',nev:'Bérleti díj',kat:'Rezsi',tip:'kiadas',ikon:'ti-home',bg:'#FAEEDA',tc:'#854F0B',alap:80000},
+  {id:'net',nev:'Internet/Tel.',kat:'Rezsi',tip:'kiadas',ikon:'ti-wifi',bg:'#FAEEDA',tc:'#854F0B',alap:6000},
+  {id:'ber1',nev:'Bér – dolgozó',kat:'Bér',tip:'kiadas',ikon:'ti-user',bg:'#EEEDFE',tc:'#3C3489',alap:260000},
+  {id:'arubeszerzés',nev:'Árubeszerzés',kat:'Árubeszerzés',tip:'kiadas',ikon:'ti-package',bg:'#FAECE7',tc:'#993C1D',alap:50000},
+  {id:'karb',nev:'Karbantartás',kat:'Karbantartás',tip:'kiadas',ikon:'ti-tool',bg:'#E6F1FB',tc:'#185FA5',alap:10000},
+  {id:'ado',nev:'Adó / NTAK',kat:'Adó',tip:'kiadas',ikon:'ti-file-invoice',bg:'#FBEAF0',tc:'#993556',alap:20000},
+  {id:'kassza_b',nev:'Kassza bevétel',kat:'Értékesítés',tip:'bevetel',ikon:'ti-cash',bg:'#E1F5EE',tc:'#0F6E56',alap:120000},
+  {id:'egyeb_k',nev:'Egyéb kiadás',kat:'Egyéb',tip:'kiadas',ikon:'ti-minus',bg:'#f1efe8',tc:'#5F5E5A',alap:0},
+  {id:'egyeb_b',nev:'Egyéb bevétel',kat:'Értékesítés',tip:'bevetel',ikon:'ti-plus',bg:'#E1F5EE',tc:'#0F6E56',alap:0},
+];
+
+let aktS=null,filtAkt='mind',penzTabAkt='rogz',eladTabAkt='gyors';
+const quickVals={};
+
+function nav(id,el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='dashboard')rd();
+  if(id==='kassza')rk();
+  if(id==='penzugy'){rpm();if(penzTabAkt==='lista')rl();else if(penzTabAkt==='ossz')ro();else if(penzTabAkt==='ism')ri();}
+  if(id==='keszlet')render_ksz_page();
+  if(id==='eladas'){rel_met();if(eladTabAkt==='gyors')render_gyors();else if(eladTabAkt==='naplo')render_naplo();else if(eladTabAkt==='stat')render_stat();else render_egyedi_form();}
+  if(id==='szallito')rsz();
+  if(id==='muszak')rm();
+  if(id==='riport')rrip();
+}
+
+function rd(){
+  const penz=load('tp-penz'),ksz=load('tp-ksz'),naplo=load('tp-naplo');
+  const bev=penz.filter(p=>p.tip==='bevetel').reduce((a,p)=>a+p.osz,0);
+  const kiad=penz.filter(p=>p.tip==='kiadas').reduce((a,p)=>a+p.osz,0);
+  const mai_bev=naplo.filter(n=>n.dat===today).reduce((a,n)=>a+(n.ar||0)*n.db,0);
+  const cr=ksz.filter(p=>p.db<=p.min).length;
+  document.getElementById('dash-m').innerHTML=`<div class="met"><div class="met-l">Mai eladás</div><div class="met-v g">${fmt(mai_bev)}</div></div><div class="met"><div class="met-l">Össz. bevétel</div><div class="met-v g">${fmt(bev)}</div></div><div class="met"><div class="met-l">Össz. kiadás</div><div class="met-v r">${fmt(kiad)}</div></div><div class="met"><div class="met-l">Kritikus készlet</div><div class="met-v ${cr>0?'r':''}">${cr} termék</div></div>`;
+  const days=['H','K','Sze','Cs','P','Szo','V'],inc=[131400,128900,119800,145200,138700,162100,88400],exp=[26200,18500,31400,22900,28600,19800,14200];
+  const mx=Math.max(...inc);
+  document.getElementById('dash-chart').innerHTML=days.map((d,i)=>`<div class="bc"><div class="bar inc" style="height:${Math.round(inc[i]/mx*72)}px"></div><div class="bar exp" style="height:${Math.round(exp[i]/mx*72)}px"></div><div class="blb">${d}</div></div>`).join('');
+  const forg={};naplo.filter(n=>n.tip==='eladas').forEach(n=>{if(!forg[n.nev])forg[n.nev]=0;forg[n.nev]+=n.db;});
+  const top=Object.entries(forg).sort((a,b)=>b[1]-a[1]).slice(0,5);const mx2=top.length?top[0][1]:1;
+  document.getElementById('dash-top').innerHTML=top.length?top.map(([nev,db])=>`<div class="pr"><span class="pn">${nev}</span><div class="pb"><div class="pf" style="width:${Math.round(db/mx2*100)}%"></div></div><span class="pv">${db} db</span></div>`).join(''):'<span style="font-size:12px;color:#888780">Nincs eladási adat</span>';
+  const crit=ksz.filter(p=>p.db<=p.min);
+  document.getElementById('dash-crit').innerHTML=crit.length?crit.map(p=>`<span class="bdg cr" style="margin:2px 3px 2px 0;display:inline-block">${p.nev}: ${p.db}</span>`).join(''):'<span style="color:#0F6E56">Minden készlet rendben</span>';
+}
+
+function rk(){
+  const hist=load('tp-kassza');const last=hist.length?hist[hist.length-1]:null;
+  document.getElementById('k-nyito').textContent=fmt(last?last.zaro:0);
+  document.getElementById('k-hist').innerHTML=hist.slice().reverse().slice(0,7).map(h=>`<tr><td>${h.dat}</td><td style="color:#0F6E56">${fmt(h.bev)}</td><td style="color:#A32D2D">${fmt(h.ki)}</td><td>${fmt(h.zaro)}</td><td style="color:${h.elt<0?'#A32D2D':'#0F6E56'}">${h.elt>=0?'+':''}${fmt(h.elt)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:#888780;padding:10px">Nincs korábbi zárás</td></tr>';
+  ['k-bev','k-ki','k-szam'].forEach(id=>document.getElementById(id).oninput=k_calc);
+}
+function k_calc(){
+  const bev=parseFloat(document.getElementById('k-bev').value)||0,ki=parseFloat(document.getElementById('k-ki').value)||0,szam=parseFloat(document.getElementById('k-szam').value)||0;
+  const nyito=parseFloat(document.getElementById('k-nyito').textContent.replace(/[^\d]/g,''))||0;
+  const vart=nyito+bev-ki,elt=szam-vart;
+  document.getElementById('k-diff').style.display='block';
+  document.getElementById('k-vart').textContent=fmt(vart);
+  const eel=document.getElementById('k-elt');eel.textContent=(elt>=0?'+':'')+fmt(elt);eel.style.color=elt<0?'#A32D2D':'#0F6E56';
+}
+function kassza_zar(){
+  const bev=parseFloat(document.getElementById('k-bev').value)||0,ki=parseFloat(document.getElementById('k-ki').value)||0,szam=parseFloat(document.getElementById('k-szam').value)||0;
+  const hist=load('tp-kassza');const nyito=hist.length?hist[hist.length-1].zaro:0;
+  hist.push({dat:today,bev,ki,nyito,zaro:szam,elt:szam-(nyito+bev-ki),megj:document.getElementById('k-megj').value});
+  save('tp-kassza',hist);
+  const penz=load('tp-penz');
+  if(bev>0)penz.push({dat:today,tip:'bevetel',osz:bev,lei:'Kassza zárás – bevétel',kat:'Értékesítés'});
+  if(ki>0)penz.push({dat:today,tip:'kiadas',osz:ki,lei:'Kassza zárás – kiadás',kat:'Egyéb'});
+  save('tp-penz',penz);
+  ['k-bev','k-ki','k-szam','k-megj'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('k-diff').style.display='none';
+  toast('Kassza zárás elmentve!');rk();
+}
+
+function rpm(){
+  const penz=load('tp-penz');
+  const bev=penz.filter(p=>p.tip==='bevetel').reduce((a,p)=>a+p.osz,0),kiad=penz.filter(p=>p.tip==='kiadas').reduce((a,p)=>a+p.osz,0);
+  const re=penz.filter(p=>p.kat==='Rezsi').reduce((a,p)=>a+p.osz,0),ber=penz.filter(p=>p.kat==='Bér').reduce((a,p)=>a+p.osz,0);
+  document.getElementById('penz-m').innerHTML=`<div class="met"><div class="met-l">Össz. bevétel</div><div class="met-v g">${fmt(bev)}</div></div><div class="met"><div class="met-l">Össz. kiadás</div><div class="met-v r">${fmt(kiad)}</div></div><div class="met"><div class="met-l">Rezsi összesen</div><div class="met-v a">${fmt(re)}</div></div><div class="met"><div class="met-l">Bér összesen</div><div class="met-v a">${fmt(ber)}</div></div>`;
+}
+function ptab(id,el){
+  penzTabAkt=id;
+  document.querySelectorAll('#pg-penzugy .tp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#pg-penzugy .tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('ptp-'+id).classList.add('active');el.classList.add('active');
+  rpm();if(id==='lista')rl();if(id==='ossz')ro();if(id==='ism')ri();
+}
+function render_sablonok(){
+  document.getElementById('sablonok').innerHTML=SABLONOK.map(s=>`<div class="sc" id="sc-${s.id}" onclick="sel_s('${s.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span style="width:22px;height:22px;border-radius:5px;background:${s.bg};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${s.ikon}" style="font-size:13px;color:${s.tc}"></i></span><span style="font-size:12px;font-weight:600;color:#1a1a18">${s.nev}</span></div><div style="font-size:11px;color:#888780">${s.kat}</div></div>`).join('');
+}
+function sel_s(id){document.querySelectorAll('.sc').forEach(c=>c.classList.remove('sel'));document.getElementById('sc-'+id).classList.add('sel');aktS=SABLONOK.find(s=>s.id===id);document.getElementById('s-osz').value=aktS.alap||'';document.getElementById('sform').style.display='block';}
+function sablon_cancel(){document.getElementById('sform').style.display='none';document.querySelectorAll('.sc').forEach(c=>c.classList.remove('sel'));aktS=null;}
+function sablon_ment(){
+  if(!aktS)return;const osz=parseFloat(document.getElementById('s-osz').value)||0;if(!osz)return toast('Add meg az összeget!');
+  const penz=load('tp-penz');const meg=document.getElementById('s-meg').value;
+  penz.push({dat:document.getElementById('s-dat').value||today,tip:aktS.tip,osz,lei:aktS.nev+(meg?' – '+meg:''),kat:aktS.kat});
+  save('tp-penz',penz);toast('✓ Rögzítve!');sablon_cancel();rpm();
+}
+function egyedi_ment(){
+  const tip=document.getElementById('e-tip').value,kat=document.getElementById('e-kat').value;
+  const osz=parseFloat(document.getElementById('e-osz').value)||0,lei=document.getElementById('e-lei').value.trim();
+  if(!osz||!lei)return toast('Töltsd ki az összeget és leírást!');
+  const penz=load('tp-penz');penz.push({dat:document.getElementById('e-dat').value||today,tip,osz,lei,kat});
+  save('tp-penz',penz);document.getElementById('e-osz').value='';document.getElementById('e-lei').value='';toast('✓ Rögzítve!');rpm();
+}
+function ri(){
+  const ism=load('tp-ism');const el=document.getElementById('ism-l');
+  el.innerHTML=ism.length?ism.map(i=>`<div class="ir"><div style="display:flex;align-items:center;gap:9px"><div style="width:30px;height:30px;border-radius:8px;background:#FAEEDA;display:flex;align-items:center;justify-content:center"><i class="ti ti-repeat" style="font-size:15px;color:#854F0B"></i></div><div><div style="font-size:13px;font-weight:600;color:#1a1a18">${i.nev}</div><div style="font-size:11px;color:#888780">${i.kat} · ${i.nap}-én · ${fmt(i.osz)}</div></div></div><div style="display:flex;gap:5px"><button class="btn sm" onclick="ism_book(${i.id})"><i class="ti ti-check"></i>Könyvel</button><button class="btn sm" onclick="ism_del(${i.id})"><i class="ti ti-trash"></i></button></div></div>`).join(''):'<p style="font-size:12px;color:#888780;padding:6px 0">Nincs ismétlődő tétel.</p>';
+}
+function ism_add(){
+  const nev=document.getElementById('i-nev').value.trim(),osz=parseFloat(document.getElementById('i-osz').value)||0;
+  if(!nev||!osz)return toast('Add meg a nevet és összeget!');
+  const ism=load('tp-ism');ism.push({id:Date.now(),nev,kat:document.getElementById('i-kat').value,osz,nap:parseInt(document.getElementById('i-nap').value)});
+  save('tp-ism',ism);document.getElementById('i-nev').value='';document.getElementById('i-osz').value='';toast('Ismétlődő mentve!');ri();
+}
+function ism_del(id){save('tp-ism',load('tp-ism').filter(i=>i.id!==id));ri();}
+function ism_book(id){
+  const item=load('tp-ism').find(i=>i.id===id);if(!item)return;
+  const penz=load('tp-penz');penz.push({dat:today,tip:'kiadas',osz:item.osz,lei:item.nev+' (ismétlődő)',kat:item.kat});
+  save('tp-penz',penz);toast('Könyvelt: '+item.nev);rpm();ri();
+}
+function set_filt(f,el){filtAkt=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');rl();}
+function rl(){
+  const penz=load('tp-penz');let l=penz.slice().reverse();
+  if(filtAkt==='bevetel')l=l.filter(p=>p.tip==='bevetel');
+  else if(filtAkt==='kiadas')l=l.filter(p=>p.tip==='kiadas');
+  else if(filtAkt!=='mind')l=l.filter(p=>p.kat===filtAkt);
+  document.getElementById('penz-l').innerHTML=l.map(p=>{
+    const ri=penz.length-1-penz.slice().reverse().indexOf(p);
+    return`<tr><td style="padding:5px 8px">${p.dat}</td><td>${p.lei}</td><td><span class="bdg ${KAT_BDG[p.kat]||'eg'}">${p.kat}</span></td><td><span class="bdg ${p.tip==='bevetel'?'bev':'ki'}">${p.tip==='bevetel'?'Bev.':'Kiad.'}</span></td><td style="text-align:right;color:${p.tip==='bevetel'?'#0F6E56':'#A32D2D'}">${p.tip==='bevetel'?'+':'-'}${fmt(p.osz)}</td><td><button class="btn sm" onclick="del_p(${ri})"><i class="ti ti-trash"></i></button></td></tr>`;
+  }).join('')||'<tr><td colspan="6" style="text-align:center;color:#888780;padding:12px">Nincs tranzakció</td></tr>';
+}
+function del_p(i){const penz=load('tp-penz');penz.splice(i,1);save('tp-penz',penz);rl();rpm();}
+function ro(){
+  const penz=load('tp-penz'),ism=load('tp-ism');
+  const kats={};penz.filter(p=>p.tip==='kiadas').forEach(p=>{if(!kats[p.kat])kats[p.kat]=0;kats[p.kat]+=p.osz;});
+  const tot=Object.values(kats).reduce((a,v)=>a+v,0)||1;
+  document.getElementById('kat-chart').innerHTML=Object.keys(kats).length?Object.entries(kats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="pr"><span class="pn">${k}</span><div class="pb"><div class="pf" style="width:${Math.round(v/tot*100)}%;background:${KAT_COLOR[k]||'#888780'}"></div></div><span class="pv">${Math.round(v/tot*100)}%</span></div><div style="font-size:11px;color:#888780;margin:-3px 0 5px 98px">${fmt(v)}</div>`).join(''):'<p style="font-size:12px;color:#888780">Nincs adat</p>';
+  const havi={};penz.forEach(p=>{const m=p.dat.slice(0,7);if(!havi[m])havi[m]={bev:0,ki:0};if(p.tip==='bevetel')havi[m].bev+=p.osz;else havi[m].ki+=p.osz;});
+  document.getElementById('havi-m').innerHTML=Object.keys(havi).length?Object.entries(havi).sort((a,b)=>b[0].localeCompare(a[0])).map(([m,v])=>{const pr=v.bev-v.ki;return`<div style="border-bottom:1px solid #e0ddd4;padding:5px 0"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#1a1a18">${m}<span style="color:${pr>=0?'#0F6E56':'#A32D2D'}">${pr>=0?'+':''}${fmt(pr)}</span></div><div style="display:flex;justify-content:space-between;font-size:11px;color:#888780"><span>Bev: ${fmt(v.bev)}</span><span>Kiad: ${fmt(v.ki)}</span></div></div>`;}).join(''):'<p style="font-size:12px;color:#888780">Nincs adat</p>';
+  const now=new Date();
+  document.getElementById('esed').innerHTML=ism.length?ism.map(i=>{const d=new Date(now.getFullYear(),now.getMonth(),i.nap);if(d<now)d.setMonth(d.getMonth()+1);const nap=Math.round((d-now)/864e5);return`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #e0ddd4"><div><div style="font-size:12px;color:#1a1a18">${i.nev}</div><div style="font-size:11px;color:#888780">${d.toISOString().slice(0,10)} · ${i.kat}</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:600;color:#A32D2D">${fmt(i.osz)}</div><div style="font-size:11px;color:#888780">${nap} nap múlva</div></div></div>`;}).join(''):'<p style="font-size:12px;color:#888780">Nincs ismétlődő tétel.</p>';
+}
+
+function render_ksz_page(){
+  const ksz=load('tp-ksz'),naplo=load('tp-naplo');
+  const ossz=ksz.reduce((a,p)=>a+p.db*p.ar,0),krit=ksz.filter(p=>p.db<=p.min).length;
+  document.getElementById('ksz-met').innerHTML=`<div class="met"><div class="met-l">Termékek száma</div><div class="met-v">${ksz.length} db</div></div><div class="met"><div class="met-l">Készlet értéke</div><div class="met-v">${fmt(ossz)}</div></div><div class="met"><div class="met-l">Kritikus készlet</div><div class="met-v ${krit>0?'r':''}">${krit} termék</div></div><div class="met"><div class="met-l">Össz. eladott</div><div class="met-v g">${naplo.filter(n=>n.tip==='eladas').reduce((a,n)=>a+n.db,0)} db</div></div>`;
+  const forg={};naplo.filter(n=>n.tip==='eladas').forEach(n=>{if(!forg[n.nev])forg[n.nev]=0;forg[n.nev]+=n.db;});
+  document.getElementById('ksz-l').innerHTML=ksz.map((p,i)=>{const el=forg[p.nev]||0,st=p.db<=0?'cr':p.db<=p.min?'lo':'ok',stl=p.db<=0?'Kritikus':p.db<=p.min?'Alacsony':'Rendben';return`<tr><td style="padding:5px 8px">${p.nev}</td><td>${fmt(p.ar)}</td><td><strong>${p.db}</strong></td><td>${p.min}</td><td style="color:#0F6E56">${el}</td><td><span class="bdg ${st}">${stl}</span></td><td><button class="btn sm" onclick="ksz_del(${i})"><i class="ti ti-trash"></i></button></td></tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:#888780;padding:12px">Nincs termék</td></tr>';
+}
+function ksz_add(){
+  const nev=document.getElementById('ksz-nev').value.trim();if(!nev)return toast('Add meg a terméknevet!');
+  const ksz=load('tp-ksz');
+  const ar=parseFloat(document.getElementById('ksz-ar').value)||0,db=parseFloat(document.getElementById('ksz-db').value)||0,min=parseFloat(document.getElementById('ksz-min').value)||10;
+  const idx=ksz.findIndex(p=>p.nev===nev);
+  if(idx>=0)ksz[idx]={nev,ar,db,min};else ksz.push({nev,ar,db,min});
+  save('tp-ksz',ksz);['ksz-nev','ksz-ar','ksz-db','ksz-min'].forEach(id=>document.getElementById(id).value='');
+  toast('Termék mentve!');render_ksz_page();
+}
+function ksz_del(i){const ksz=load('tp-ksz');ksz.splice(i,1);save('tp-ksz',ksz);render_ksz_page();}
+
+function etab(id,el){
+  eladTabAkt=id;
+  document.querySelectorAll('#pg-eladas .tp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#pg-eladas .tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('etp-'+id).classList.add('active');el.classList.add('active');
+  rel_met();
+  if(id==='gyors')render_gyors();if(id==='egyedi')render_egyedi_form();if(id==='naplo')render_naplo();if(id==='stat')render_stat();
+}
+function rel_met(){
+  const naplo=load('tp-naplo');
+  const mai_db=naplo.filter(n=>n.dat===today&&n.tip==='eladas').reduce((a,n)=>a+n.db,0);
+  const mai_bev=naplo.filter(n=>n.dat===today&&n.tip==='eladas').reduce((a,n)=>a+(n.ar||0)*n.db,0);
+  const ossz_db=naplo.filter(n=>n.tip==='eladas').reduce((a,n)=>a+n.db,0);
+  const ossz_bev=naplo.filter(n=>n.tip==='eladas').reduce((a,n)=>a+(n.ar||0)*n.db,0);
+  document.getElementById('el-met').innerHTML=`<div class="met"><div class="met-l">Mai eladás (db)</div><div class="met-v g">${mai_db} db</div></div><div class="met"><div class="met-l">Mai forgalom</div><div class="met-v g">${fmt(mai_bev)}</div></div><div class="met"><div class="met-l">Össz. eladott</div><div class="met-v">${ossz_db} db</div></div><div class="met"><div class="met-l">Össz. forgalom</div><div class="met-v">${fmt(ossz_bev)}</div></div>`;
+}
+function render_gyors(){
+  const ksz=load('tp-ksz');
+  document.getElementById('quick-list').innerHTML=ksz.length?ksz.map(p=>{const key=p.nev.replace(/\W/g,'_');if(!quickVals[key])quickVals[key]=1;return`<div class="qr"><div><div style="font-size:13px;font-weight:600;color:#1a1a18">${p.nev}</div><div style="font-size:11px;color:#888780">Készlet: ${p.db} db &nbsp;·&nbsp; ${fmt(p.ar)}/db</div></div><div style="display:flex;align-items:center;gap:6px"><button class="cb" onclick="qchg('${key}',-1)">−</button><span class="cv" id="qv-${key}">${quickVals[key]}</span><button class="cb" onclick="qchg('${key}',1)">+</button><button class="btn g sm" onclick="qsell('${p.nev}','${key}')"><i class="ti ti-check"></i>Elad</button></div></div>`;}).join(''):'<p style="font-size:12px;color:#888780">Nincs termék. Először adj hozzá terméket a Készlet menüben.</p>';
+}
+function qchg(key,d){if(!quickVals[key])quickVals[key]=1;quickVals[key]=Math.max(1,quickVals[key]+d);const el=document.getElementById('qv-'+key);if(el)el.textContent=quickVals[key];}
+function qsell(nev,key){
+  const db=quickVals[key]||1,ksz=load('tp-ksz');const idx=ksz.findIndex(p=>p.nev===nev);
+  if(idx<0)return toast('Termék nem található!');if(ksz[idx].db<db)return toast('Nincs elég készlet!');
+  ksz[idx].db-=db;save('tp-ksz',ksz);
+  const naplo=load('tp-naplo');naplo.push({dat:today,nev,db,ar:ksz[idx].ar,tip:'eladas',id:Date.now()});
+  save('tp-naplo',naplo);quickVals[key]=1;toast(`✓ ${db} db ${nev} eladva!`);render_gyors();rel_met();
+}
+function render_egyedi_form(){
+  const ksz=load('tp-ksz');const sel=document.getElementById('el-nev');
+  sel.innerHTML=ksz.map(p=>`<option value="${p.nev}">${p.nev} (${p.db} db) – ${fmt(p.ar)}</option>`).join('')||'<option>Nincs termék</option>';
+  sel.oninput=uprev;document.getElementById('el-db').oninput=uprev;uprev();
+}
+function uprev(){
+  const sel=document.getElementById('el-nev'),db=parseInt(document.getElementById('el-db').value)||1;
+  const opt=sel.options[sel.selectedIndex];if(!opt)return;
+  const m=opt.text.match(/–\s*([\d\s]+)Ft/);const ar=m?parseInt(m[1].replace(/\s/g,'')):0;
+  document.getElementById('el-prev').textContent=ar?`Várható bevétel: ${fmt(db*ar)} (${db} × ${fmt(ar)})`:'';
+}
+function eladas_ment(){
+  const nev=document.getElementById('el-nev').value,db=parseInt(document.getElementById('el-db').value)||0,dat=document.getElementById('el-dat').value||today;
+  if(!nev||!db)return toast('Töltsd ki a mezőket!');
+  const ksz=load('tp-ksz');const idx=ksz.findIndex(p=>p.nev===nev);
+  if(idx<0)return toast('Termék nem található!');if(ksz[idx].db<db)return toast('Nincs elég készlet! ('+ksz[idx].db+' db)');
+  ksz[idx].db-=db;save('tp-ksz',ksz);
+  const naplo=load('tp-naplo');naplo.push({dat,nev,db,ar:ksz[idx].ar,tip:'eladas',id:Date.now()});
+  save('tp-naplo',naplo);document.getElementById('el-db').value='1';toast(`✓ ${db} db ${nev} eladva!`);render_egyedi_form();rel_met();
+}
+function render_naplo(){
+  const naplo=load('tp-naplo');
+  document.getElementById('naplo-l').innerHTML=naplo.slice().reverse().map((n,i)=>{const ri=naplo.length-1-i;return`<tr><td style="padding:5px 8px">${n.dat}</td><td>${n.nev}</td><td>${n.db} db</td><td style="color:#0F6E56">${fmt((n.ar||0)*n.db)}</td><td><span class="bdg el">Eladás</span></td><td><button class="btn sm" onclick="naplo_del(${ri})"><i class="ti ti-trash"></i></button></td></tr>`;}).join('')||'<tr><td colspan="6" style="text-align:center;color:#888780;padding:12px">Nincs bejegyzés</td></tr>';
+}
+function naplo_del(i){
+  const naplo=load('tp-naplo'),n=naplo[i],ksz=load('tp-ksz');const idx=ksz.findIndex(p=>p.nev===n.nev);
+  if(idx>=0)ksz[idx].db+=n.db;save('tp-ksz',ksz);naplo.splice(i,1);save('tp-naplo',naplo);
+  toast('Törölve, készlet visszaállítva.');render_naplo();rel_met();
+}
+function render_stat(){
+  const ksz=load('tp-ksz'),naplo=load('tp-naplo');
+  const forg={};naplo.filter(n=>n.tip==='eladas').forEach(n=>{if(!forg[n.nev])forg[n.nev]={db:0,bev:0};forg[n.nev].db+=n.db;forg[n.nev].bev+=(n.ar||0)*n.db;});
+  const top=Object.entries(forg).sort((a,b)=>b[1].db-a[1].db).slice(0,6);const mx=top.length?top[0][1].db:1;
+  document.getElementById('top-fogyo').innerHTML=top.length?top.map(([nev,v])=>`<div class="pr"><span class="pn">${nev}</span><div class="pb"><div class="pf" style="width:${Math.round(v.db/mx*100)}%"></div></div><span class="pv">${v.db} db</span></div><div style="font-size:11px;color:#888780;margin:-3px 0 5px 98px">${fmt(v.bev)}</div>`).join(''):'<p style="font-size:12px;color:#888780">Nincs eladási adat.</p>';
+  const ke=ksz.slice().sort((a,b)=>b.db*b.ar-a.db*a.ar).slice(0,5);const mxe=ke.length?ke[0].db*ke[0].ar:1;
+  document.getElementById('ksz-ertek').innerHTML=ke.length?ke.map(p=>{const e=p.db*p.ar;return`<div class="pr"><span class="pn">${p.nev}</span><div class="pb"><div class="pf" style="width:${Math.round(e/mxe*100)}%;background:#1D9E75"></div></div><span class="pv" style="width:50px;font-size:10px">${fmt(e)}</span></div>`;}).join(''):'<p style="font-size:12px;color:#888780">Nincs termék.</p>';
+  document.getElementById('stat-l').innerHTML=ksz.map(p=>{const f=forg[p.nev]||{db:0,bev:0};return`<tr><td>${p.nev}</td><td>${p.db} db</td><td style="color:#0F6E56">${f.db} db</td><td style="color:#0F6E56">${fmt(f.bev)}</td><td>${fmt(p.db*p.ar)}</td></tr>`;}).join('')||'<tr><td colspan="5" style="text-align:center;color:#888780;padding:12px">Nincs adat</td></tr>';
+}
+
+function rsz(){
+  const sz=load('tp-sz');
+  document.getElementById('sz-l').innerHTML=sz.map((s,i)=>`<tr><td>${s.nev}</td><td>${s.kon}</td><td>${s.tel}</td><td>${s.ter}</td><td>${s.nap}</td><td><button class="btn sm" onclick="sz_del(${i})"><i class="ti ti-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:#888780;padding:10px">Nincs szállító</td></tr>';
+}
+function sz_add(){
+  const nev=document.getElementById('sz-nev').value.trim();if(!nev)return toast('Add meg a szállító nevét!');
+  const sz=load('tp-sz');sz.push({nev,kon:document.getElementById('sz-kon').value,tel:document.getElementById('sz-tel').value,ter:document.getElementById('sz-ter').value,nap:document.getElementById('sz-nap').value,meg:document.getElementById('sz-meg').value});
+  save('tp-sz',sz);['sz-nev','sz-kon','sz-tel','sz-ter','sz-meg'].forEach(id=>document.getElementById(id).value='');toast('Szállító mentve!');rsz();
+}
+function sz_del(i){const sz=load('tp-sz');sz.splice(i,1);save('tp-sz',sz);rsz();}
+
+function rm(){
+  document.getElementById('m-dat').value=today;
+  const ms=load('tp-muszak');
+  document.getElementById('m-l').innerHTML=ms.slice().sort((a,b)=>b.dat.localeCompare(a.dat)).map((m,i)=>`<tr><td>${m.dat}</td><td>${m.nev}</td><td>${m.tip}h</td><td>${m.meg||'–'}</td><td><button class="btn sm" onclick="m_del(${i})"><i class="ti ti-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:#888780;padding:10px">Nincs beosztás</td></tr>';
+}
+function m_add(){
+  const nev=document.getElementById('m-nev').value.trim(),dat=document.getElementById('m-dat').value;
+  if(!nev||!dat)return toast('Add meg a nevet és dátumot!');
+  const ms=load('tp-muszak');ms.push({nev,dat,tip:document.getElementById('m-tip').value,meg:document.getElementById('m-meg').value});
+  save('tp-muszak',ms);document.getElementById('m-nev').value='';document.getElementById('m-meg').value='';toast('Műszak mentve!');rm();
+}
+function m_del(i){const ms=load('tp-muszak');ms.splice(i,1);save('tp-muszak',ms);rm();}
+
+function rrip(){
+  const penz=load('tp-penz');
+  const bev=penz.filter(p=>p.tip==='bevetel').reduce((a,p)=>a+p.osz,0),kiad=penz.filter(p=>p.tip==='kiadas').reduce((a,p)=>a+p.osz,0);
+  document.getElementById('rip-m').innerHTML=`<div class="met"><div class="met-l">Össz. bevétel</div><div class="met-v g">${fmt(bev)}</div></div><div class="met"><div class="met-l">Össz. kiadás</div><div class="met-v r">${fmt(kiad)}</div></div><div class="met"><div class="met-l">Profit</div><div class="met-v ${bev-kiad>=0?'g':'r'}">${fmt(bev-kiad)}</div></div><div class="met"><div class="met-l">Tranzakciók</div><div class="met-v">${penz.length} db</div></div>`;
+  const havi={};penz.forEach(p=>{const m=p.dat.slice(0,7);if(!havi[m])havi[m]={bev:0,ki:0};if(p.tip==='bevetel')havi[m].bev+=p.osz;else havi[m].ki+=p.osz;});
+  document.getElementById('rip-havi').innerHTML=Object.keys(havi).length?Object.entries(havi).sort((a,b)=>b[0].localeCompare(a[0])).map(([m,v])=>{const pr=v.bev-v.ki;return`<div style="border-bottom:1px solid #e0ddd4;padding:5px 0"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#1a1a18">${m}<span style="color:${pr>=0?'#0F6E56':'#A32D2D'}">${pr>=0?'+':''}${fmt(pr)}</span></div><div style="display:flex;justify-content:space-between;font-size:11px;color:#888780"><span>Bev: ${fmt(v.bev)}</span><span>Kiad: ${fmt(v.ki)}</span></div></div>`;}).join(''):'<p style="font-size:12px;color:#888780">Nincs adat</p>';
+  const kats={};penz.filter(p=>p.tip==='kiadas').forEach(p=>{if(!kats[p.kat])kats[p.kat]=0;kats[p.kat]+=p.osz;});const tot=Object.values(kats).reduce((a,v)=>a+v,0)||1;
+  document.getElementById('rip-kat').innerHTML=Object.keys(kats).length?Object.entries(kats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="pr"><span class="pn">${k}</span><div class="pb"><div class="pf" style="width:${Math.round(v/tot*100)}%;background:${KAT_COLOR[k]||'#888780'}"></div></div><span class="pv">${Math.round(v/tot*100)}%</span></div>`).join(''):'<p style="font-size:12px;color:#888780">Nincs adat</p>';
+  document.getElementById('rip-l').innerHTML=penz.slice().reverse().map(p=>`<tr><td>${p.dat}</td><td>${p.lei}</td><td><span class="bdg ${KAT_BDG[p.kat]||'eg'}">${p.kat}</span></td><td><span class="bdg ${p.tip==='bevetel'?'bev':'ki'}">${p.tip==='bevetel'?'Bev.':'Kiad.'}</span></td><td style="text-align:right;color:${p.tip==='bevetel'?'#0F6E56':'#A32D2D'}">${p.tip==='bevetel'?'+':'-'}${fmt(p.osz)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:#888780;padding:12px">Nincs tranzakció</td></tr>';
+}
+
+render_sablonok();
+rd();
+
+// PWA Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js');
+  });
+}
+</script>
+</body>
+</html>
+
+{
+  "name": "TrafikPro – Dohánybolt kezelő",
+  "short_name": "TrafikPro",
+  "description": "Dohánybolt kezelő alkalmazás",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f5f0",
+  "theme_color": "#3C3489",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
+const CACHE = 'trafikpro-v1';
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(ASSETS))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      return cached || fetch(e.request).catch(() => caches.match('./index.html'));
+    })
+  );
+});
